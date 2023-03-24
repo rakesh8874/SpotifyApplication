@@ -1,0 +1,46 @@
+version: "3.9"
+services:
+  mysql-auth-service:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    container_name: mysql-container
+    networks:
+      - user-net
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+
+  user-authentication-service:
+    container_name: user-authentication-service
+    build: UserAuthService/
+    networks:
+      - user-net
+    ports:
+      - "8084:8084"
+    depends_on:
+      - mysql-auth-service
+    restart: always
+
+  mongodb-track-container:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    container_name: mongodb-track-container
+    networks:
+      - user-net
+  user-track-service:
+    container_name: user-track-service
+    build: MusicApplication/
+    networks:
+      - user-net
+    ports:
+      - "8085:8085"
+    depends_on:
+      - mongodb-track-container
+    restart: always
+networks:
+  user-net:
+    driver: bridge
